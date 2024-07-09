@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import {
-  Container,
-	Main,
-	Footer,
-} from '@element-plus/icons-vue'
 import MarkdownRenderer from '../MarkdownRenderer.vue';
 
+const keyWord = ref('')
 // defineProps<{ msg: string }>()
 const markdownContent = ref('');
 
@@ -34,15 +30,33 @@ onMounted(() => {
 
 <template>
 	<div class="common-layout">
-    <el-container>
-      <el-main> <MarkdownRenderer :content="markdownContent" /></el-main>
-      <el-footer>Footer</el-footer>
+    <el-container style="height: 100%;">
+		<el-main>
+			<MarkdownRenderer :content="markdownContent" />
+			<el-divider />	
+		</el-main>
+		<el-footer>
+			
+			<el-row :gutter="24" style="padding-bottom: 12px;">
+				<el-col :span="22">
+					<el-input  v-model="keyWord" autosize type="textarea"></el-input>
+				</el-col>
+				<el-col :span="2">
+					<el-button type="primary">发送</el-button>
+				</el-col>
+			</el-row>
+		</el-footer>
     </el-container>
   </div>
 </template>
 
 <style scoped>
-.read-the-docs {
-  color: #888;
+.common-layout {
+	height: 100vh;
+}
+.el-main {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
 }
 </style>
