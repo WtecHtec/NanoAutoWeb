@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import MarkdownRenderer from '../MarkdownRenderer.vue';
 
+interface IMsg {
+	type:  string
+	content: string
+}
 const keyWord = ref('')
 // defineProps<{ msg: string }>()
 // const markdownContent = ref('');
 /**
  * [ { type: use/system, content: string }]
  */
-const msgs = reactive([])
+const msgs = reactive<IMsg[]>([])
 const status = ref(true)
 
 const handleSendMessage = async () => {
