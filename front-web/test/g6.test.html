@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tutorial Demo</title>
+</head>
+	<body>
+    /* 图的画布容器 */
+    <div id="mountNode"></div>
+    
+    /* 引入 G6 */
+    <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.1.0/build/g6.js"></script>
+    
+    <script>
+      // 定义数据源
+      const data = {
+        // 点集
+        nodes: [{
+          id: 'node1',
+        },{
+          id: 'node2',
+        }],
+        // 边集
+        edges: [
+          // 表示一条从 node1 节点连接到 node2 节点的边
+          {
+            source: 'node1',
+            target: 'node2'
+          }
+        ]
+      };
+      
+      // 创建 G6 图实例
+      const graph = new G6.Graph({
+        container: 'mountNode', // 指定图画布的容器 id，与第 9 行的容器对应
+        // 画布宽高
+        width: 800,
+        height: 500,
+				defaultNode: {
+    type: 'rect', // 使用矩形节点
+    style: {
+      fill: '#fff', // 节点填充颜色
+      stroke: '#666', // 节点边框颜色
+      radius: 5, // 节点圆角
+      shadowColor: '#ccc', // 阴影颜色
+      shadowBlur: 10, // 阴影模糊度
+    },
+    labelCfg: {
+      style: {
+        fill: '#000', // 标签文字颜色
+        fontSize: 14, // 标签文字大小
+      },
+    },
+  },
+  defaultEdge: {
+    style: {
+      stroke: '#888', // 边颜色
+      lineWidth: 2, // 边宽度
+    },
+  },
+  layout: {
+    type: 'dagre', // 使用 Dagre 布局
+    rankdir: 'LR', // 从左到右布局
+    nodesep: 20, // 节点间距
+    ranksep: 50, // 层间距
+  },
+      });
+      // 读取数据
+      graph.data(data);
+      // 渲染图
+      graph.render();
+    </script>
+  </body>
+</html>

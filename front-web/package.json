@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@antv/g6": "^3.2.3",
     "axios": "^1.7.2",
     "element-plus": "^2.7.6",
     "markdown-it": "^14.1.0",
