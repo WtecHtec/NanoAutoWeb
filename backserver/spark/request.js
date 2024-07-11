@@ -6,6 +6,8 @@ const ENV = require('../env.json');
  * @returns 
  */
 function request(messages) {
+    console.log(messages)
+    console.log('--------')
   return new  Promise( async (resolve, reject) => {
     try {
         const header = {

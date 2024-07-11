@@ -35,7 +35,7 @@ const handleSendMessage = async () => {
 		
 		keyWord.value = ''
 		//  如果需要直接输出结果
-		const [code, result] = await post('/spark', { prompt })
+		const [code, result] = await post('/spark/chat', { prompt })
 		if (code === 0) {
 			const { data } = result
 			let content = ''

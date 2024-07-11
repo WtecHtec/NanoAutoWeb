@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import MindMapRenderer from './MindMapRenderer.vue';
+// import MindMapRenderer from './MindMapRenderer.vue';
+import MarkMapRenderer from './MarkMapRenderer.vue';
+import { post } from '../Base/api';
 interface IMsg {
 	type:  string
 	content: string
-	summary: object
+	summary?: object
 }
 const keyWord = ref('')
 // defineProps<{ msg: string }>()
@@ -27,37 +29,38 @@ const handleSendMessage = async () => {
 		return
 	}
 	
-	// if (keyWord.value) {
-	// 	status.value = false
-	// 	const prompt =  `${keyWord.value}${basePrompt}`
-	// 	msgs.push({ type: 'user', content: keyWord.value })
+	if (keyWord.value) {
+		status.value = false
+		const prompt =  `${keyWord.value}`
+		msgs.push({ type: 'user', content: keyWord.value, })
 		
-	// 	keyWord.value = ''
-	// 	//  如果需要直接输出结果
-	// 	const [code, result] = await post('/spark', { prompt })
-	// 	if (code === 0) {
-	// 		const { data } = result
-	// 		let content = ''
-	// 		if (Array.isArray(data)) {
-	// 			data.forEach(item => {
-	// 				const { message } = item;
-	// 				content += `${message.content}\n`
-	// 			})
-	// 		}
-	// 		msgs.push({ type: 'system', content })
-	// 	} else {
-	// 		ElMessage.error('异常');
-	// 	}
-	// 	// markdownContent.value = result
-	// 	// 如果需要输出字节流的方式
-	//  	// const stream = session.promptStreaming(prompt);
-	// 	// for await (const chunk of stream) {
-	// 	// 	console.log(chunk);
-	// 	// }
-	// 	status.value = true
-	// } else {
-	// 	ElMessage.error('异常');
-	// }
+		keyWord.value = ''
+		//  如果需要直接输出结果
+		const [code, result] = await post('/spark/summary', { prompt })
+		if (code === 0) {
+			const { data } = result
+			console.log(data)
+			let content = ''
+			if (Array.isArray(data)) {
+				data.forEach(item => {
+					const { message } = item;
+					content += `${message.content}\n`
+				})
+			}
+			msgs.push({ type: 'system', content })
+		} else {
+			ElMessage.error('异常');
+		}
+		// markdownContent.value = result
+		// 如果需要输出字节流的方式
+	 	// const stream = session.promptStreaming(prompt);
+		// for await (const chunk of stream) {
+		// 	console.log(chunk);
+		// }
+		status.value = true
+	} else {
+		ElMessage.error('异常');
+	}
 }
 </script>
 
@@ -66,12 +69,13 @@ const handleSendMessage = async () => {
     <el-container style="height: 100%;">
 		<el-main>
 			<div class="common-container">
+				
 				<div v-for="(item, index) in msgs" :key="index">
 					<div class="common-card-user" v-show="item.type === 'user'">
 						<span  class="user-content"> {{ item.content }}</span>
 					</div>
-					<div v-show="item.type === 'system'" class="common-card-system">
-						<MindMapRenderer  :data="item.summary" />
+					<div v-if="item.type === 'system'" class="common-card-system">
+						<MarkMapRenderer :data="item.content"></MarkMapRenderer>
 					</div>
 				
 				</div>

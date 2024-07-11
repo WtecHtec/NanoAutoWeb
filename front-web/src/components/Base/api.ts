@@ -4,7 +4,7 @@ const baseURL = 'http://localhost:3000'
 
 const axiosInstance = axios.create({
   baseURL,
-  timeout: 10000
+  timeout: 1000 * 60 * 10
 })
 
 export const post = (url: string, data: any): Promise<[number, any]> => {
