@@ -1,140 +1,129 @@
-<template>
-  <div id="mind-map-container" class="mind-map-container"></div>
-</template>
-
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import * as G6 from '@antv/g6';
-console.log(G6);
-const COLLAPSE_ICON = function COLLAPSE_ICON(x, y, r) {
-  return [[ 'M', x, y ], [ 'a', r, r, 0, 1, 0, r * 2, 0 ], [ 'a', r, r, 0, 1, 0, -r * 2, 0 ], [ 'M', x + 2, y ], [ 'L', x + 2 * r - 2, y ]];
-};
-const EXPAND_ICON = function EXPAND_ICON(x, y, r) {
-  return [[ 'M', x, y ], [ 'a', r, r, 0, 1, 0, r * 2, 0 ], [ 'a', r, r, 0, 1, 0, -r * 2, 0 ], [ 'M', x + 2, y ], [ 'L', x + 2 * r - 2, y ], [ 'M', x + r, y - r + 2 ], [ 'L', x + r, y + r - 2 ]];
-};
-G6.registerNode('tree-node', {
-  drawShape: function drawShape(cfg, group) {
-    const rect = group.addShape('rect', {
-      attrs: {
-        fill: '#fff',
-        stroke: '#666'
-      }
-    });
-    const content = cfg.name.replace(/(.{19})/g, '$1\n');
-    const text = group.addShape('text', {
-      attrs: {
-        text: content,
-        x: 0,
-        y: 0,
-        textAlign: 'left',
-        textBaseline: 'middle',
-        fill: '#666'
-      }
-    });
-    const bbox = text.getBBox();
-    const hasChildren = cfg.children && cfg.children.length > 0;
-    if (hasChildren) {
-      group.addShape('marker', {
-        attrs: {
-          x: bbox.maxX + 6,
-          y: bbox.minX + bbox.height / 2 - 6,
-          r: 6,
-          symbol: COLLAPSE_ICON,
-          stroke: '#666',
-          lineWidth: 2
-        },
-        className: 'collapse-icon'
-      });
-    }
-    rect.attr({
-      x: bbox.minX - 4,
-      y: bbox.minY - 6,
-      width: bbox.width + (hasChildren ? 26 : 8),
-      height: bbox.height + 12
-    });
-    return rect;
-  }
-}, 'single-shape');
-
-
-
-
-
-function renderMindMap() {
-	const width = document.getElementById('mind-map-container').scrollWidth;
-const height = document.getElementById('mind-map-container').scrollHeight || 500;
-	const graph = new G6.TreeGraph({
-		container: 'mind-map-container',
-		width,
-		height,
-		modes: {
-			default: [{
-				type: 'collapse-expand',
-				onChange: function onChange(item, collapsed) {
-					const data = item.get('model');
-					const icon = item.get('group').findByClassName('collapse-icon');
-					if (collapsed) {
-						icon.attr('symbol', EXPAND_ICON);
-					} else {
-						icon.attr('symbol', COLLAPSE_ICON);
-					}
-					data.collapsed = collapsed;
-					return true;
-				}
-			}, 'drag-canvas', 'zoom-canvas' ]
-		},
-		defaultNode: {
-			shape: 'tree-node',
-			anchorPoints: [[ 0, 0.5 ], [ 1, 0.5 ]]
-		},
-		defaultEdge: {
-			shape: 'cubic-horizontal',
-			style: {
-				stroke: '#A3B1BF'
-			}
-		},
-		layout: {
-			type: 'compactBox',
-			direction: 'LR',
-			getId: function getId(d) {
-				return d.id;
-			},
-			getHeight: function getHeight() {
-				return 16;
-			},
-			getWidth: function getWidth() {
-				return 16;
-			},
-			getVGap: function getVGap() {
-				return 20;
-			},
-			getHGap: function getHGap() {
-				return 80;
-			}
-		}
-	});
-	fetch('https://gw.alipayobjects.com/os/antvdemo/assets/data/modeling-methods.json')
-		.then(res => res.json())
-		.then(data => {
-			G6.Util.traverseTree(data, function(item) {
-				item.id = item.name;
-			});
-			graph.data(data);
-			graph.render();
-			graph.fitView();
-  });
-
+import { ref, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
+import MindMapRenderer from './MindMapRenderer.vue';
+interface IMsg {
+	type:  string
+	content: string
+	summary: object
 }
+const keyWord = ref('')
+// defineProps<{ msg: string }>()
+// const markdownContent = ref('');
+/**
+ * [ { type: use/system, content: string }]
+ */
+const msgs = reactive<IMsg[]>([])
+const status = ref(true)
 
-onMounted(() => {
-	renderMindMap();
-});
+const handleSendMessage = async () => {
+//  const basePrompt = ''
+
+	if (!keyWord.value) {
+		ElMessage({
+			message: '请输入内容!',
+			type: 'warning',
+  		})
+		return
+	}
+	
+	// if (keyWord.value) {
+	// 	status.value = false
+	// 	const prompt =  `${keyWord.value}${basePrompt}`
+	// 	msgs.push({ type: 'user', content: keyWord.value })
+		
+	// 	keyWord.value = ''
+	// 	//  如果需要直接输出结果
+	// 	const [code, result] = await post('/spark', { prompt })
+	// 	if (code === 0) {
+	// 		const { data } = result
+	// 		let content = ''
+	// 		if (Array.isArray(data)) {
+	// 			data.forEach(item => {
+	// 				const { message } = item;
+	// 				content += `${message.content}\n`
+	// 			})
+	// 		}
+	// 		msgs.push({ type: 'system', content })
+	// 	} else {
+	// 		ElMessage.error('异常');
+	// 	}
+	// 	// markdownContent.value = result
+	// 	// 如果需要输出字节流的方式
+	//  	// const stream = session.promptStreaming(prompt);
+	// 	// for await (const chunk of stream) {
+	// 	// 	console.log(chunk);
+	// 	// }
+	// 	status.value = true
+	// } else {
+	// 	ElMessage.error('异常');
+	// }
+}
 </script>
 
+<template>
+	<div class="common-layout">
+    <el-container style="height: 100%;">
+		<el-main>
+			<div class="common-container">
+				<div v-for="(item, index) in msgs" :key="index">
+					<div class="common-card-user" v-show="item.type === 'user'">
+						<span  class="user-content"> {{ item.content }}</span>
+					</div>
+					<div v-show="item.type === 'system'" class="common-card-system">
+						<MindMapRenderer  :data="item.summary" />
+					</div>
+				
+				</div>
+				<el-skeleton v-show="!status" :rows="5" animated />
+			</div>
+			<el-divider />	
+		</el-main>
+		<el-footer>
+			
+			<el-row :gutter="24" style="padding-bottom: 12px;">
+				<el-col :span="22">
+					<el-input placeholder="请输入文章链接" v-model="keyWord"  type="input"></el-input>
+				</el-col>
+				<el-col :span="2">
+					<el-button type="primary" @click="handleSendMessage" :disabled="!status">发送</el-button>
+				</el-col>
+			</el-row>
+		</el-footer>
+    </el-container>
+  </div>
+</template>
+
 <style scoped>
-/* 你可以在这里添加自定义的样式 */
-.mind-map-container {
-	height: 400px;
-	width: 100%;
+.common-layout {
+	height: 100vh;
+}
+.el-main {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.common-container {
+	flex: 1;
+	overflow-y: auto;
+	box-sizing: border-box;
+}
+
+.common-card-user {
+	background-color: #2E67FA;
+	padding: 10px;
+	margin-bottom: 10px;
+	border-radius: 10px;
+}
+.common-card-system {
+	background-color: #fff;
+	padding: 10px;
+	margin-bottom: 10px;
+	border-radius: 10px;
+	border: 1px solid #E5E5E5;
+}
+.user-content {
+	color: #fff;
 }
 </style>
