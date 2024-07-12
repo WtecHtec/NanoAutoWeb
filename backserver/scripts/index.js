@@ -1,5 +1,6 @@
 
 const runTerminal = require('./terminal')
-runTerminal((line) => {
-
+const WorkLLM = require('./work.llm')
+runTerminal( async (line) => {
+	await WorkLLM(line)
 })

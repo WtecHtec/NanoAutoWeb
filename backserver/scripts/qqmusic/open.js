@@ -7,11 +7,10 @@ end tell
 `
 module.exports = {
     script,
-    actionMap: {
-        actionName: script,
-        action: {
-            name:  actionName,
-            descript: '打开QQ音乐'
-        },
-    },
+		actionName,
+		action: {
+				name:  actionName,
+				descript: '打开QQ音乐应用。'
+		},
+    result: "打开QQ音乐应用成功"
 }

@@ -2,15 +2,24 @@
 const openQQMusic = require('./open')
 const playMusic = require('./play')
 const actionsMap = {
-    ...openQQMusic.actionMap,
-    ...playMusic.actionMap,
+	[openQQMusic.actionName]: openQQMusic,
+	[playMusic.actionName]: playMusic,
+	finish:{
+		action: {
+			"name": "finish",
+			"descript": "完成用户目标",
+		},
+		result: "完成用户目标"
+	},
 }
 
 function getActionsDescript() {
     let actionsDescript = ''
+		let index = 0
     for (const key in actionsMap) {
-        const action = actionsMap[key]
-        actionsDescript += `1、action:${action.name},description:${action.descript};`
+				index = index + 1
+        const action = actionsMap[key].action
+        actionsDescript += `${index}、action:"${action.name}",description:"${action.descript}";\n`
     }
     return actionsDescript
 }

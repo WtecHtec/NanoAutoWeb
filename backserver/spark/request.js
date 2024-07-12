@@ -6,21 +6,18 @@ const ENV = require('../env.json');
  * @returns 
  */
 function request(messages) {
-    console.log(messages)
-    console.log('--------')
   return new  Promise( async (resolve, reject) => {
     try {
         const header = {
             "Authorization": `Bearer ${ENV.API_KEY}:${ENV.SECERT}`,
         }
         const data = {
-            "model": "generalv3.5", // 指定请求的模型
+            "model": ENV.MODEL, // 指定请求的模型
             "messages": [
                 ...messages
             ]
         }
         const response = await axios.post(ENV.BASE_URL, data, {headers: header});
-        console.log(response.data.choices);
         if ( response  && response.data && response.data.code === 0 && response.data.choices) {
             resolve([0, response.data.choices])
         } else {

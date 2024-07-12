@@ -2,8 +2,7 @@ const { actionsDescript } = require("../scripts/qqmusic")
 
 const NextActionPrompt = "根据给定的目标和迄今为止取得的进展，确定下一个要执行action，并使用前面指定的JSON模式进行响应："
 
-const response_format_prompt = `
- {
+const response_format_prompt = `{
     "action": {
         "name": "action name",
         "args": {
@@ -17,9 +16,8 @@ const response_format_prompt = `
         "reasoning": "推理"
     },
     "observation": "观察当前任务的整体进度"
-}
-`
-function getAppleScriptPrompt(target, agentScratch) {
+}`
+function getAppleScriptPrompt(target, agentScratch = '') {
     const prompt_template = `
     # 角色:
     你是一个专业的WorkFLow专家。
@@ -39,8 +37,8 @@ function getAppleScriptPrompt(target, agentScratch) {
     #要求:
     你应该以json格式响应,响应格式如下:
     ${response_format_prompt}
-    确保响应结果可以由node JSON.parse()成功加载。
-    agent_scratchpad: ${agentScratch}
+    确保响应结果可以由Node JSON.parse()成功加载。
+    agent_scratch: ${agentScratch}
     # 目标:
     ${target}
 

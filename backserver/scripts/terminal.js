@@ -11,12 +11,11 @@ function runTerminal(callBack) {
     rl.prompt();
 
     // 监听输入
-    rl.on('line', (line) => {
+    rl.on('line', async (line) => {
         if (line.trim() === 'exit') {
             rl.close();
         } else {
-            console.log(line);
-            typeof callBack === 'function' && callBack(line)
+            typeof callBack === 'function' &&  await callBack(line)
             rl.prompt();
         }
     }).on('close', () => {
