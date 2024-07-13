@@ -1,9 +1,9 @@
 
-const openQQMusic = require('./open')
-const playMusic = require('./play')
+const openVsCode = require('./openVsCode')
+const openCodeToVscode = require('./openCodeToVscode')
 const actionsMap = {
-	[openQQMusic.actionName]: openQQMusic,
-	[playMusic.actionName]: playMusic,
+	[openVsCode.actionName]: openVsCode,
+	[openCodeToVscode.actionName]: openCodeToVscode,
 	finish:{
 		action: {
 			"name": "finish",

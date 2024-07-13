@@ -22,10 +22,30 @@ const  playMusic = `tell application "System Events"
 end tell
 `
 
+
+const openCodeToVscode = `
+
+-- 显示对话框以选择文件或文件夹
+set chosenPath to POSIX path of "/Users/shenruqi/Desktop/Code/WxminiGame/Game01"
+
+-- 检查用户是否选择了文件或文件夹
+if chosenPath is not equal to "" then
+    -- 打开Visual Studio Code并指定路径
+    tell application "Visual Studio Code"
+        activate
+        open chosenPath
+    end tell
+else
+    display dialog "没有选择文件或文件夹。"
+end if
+
+`
+
 async function main() {
-	await runAppleScript(openQQMusic)
-	await runDelay(2000)
-	await runAppleScript(playMusic)
+	// await runAppleScript(openQQMusic)
+	// await runDelay(2000)
+	// await runAppleScript(playMusic)
+	await runAppleScript(openCodeToVscode)
 }
 
 main()
