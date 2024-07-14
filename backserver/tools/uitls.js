@@ -1,4 +1,8 @@
 const fixJsonString = (jsonString) => {
+	try {
+		return JSON.stringify(eval(jsonString))
+	} catch (error) {
+	}
   // 修复单引号问题
   const fixedString = jsonString.replace(/'/g, '"');
   

@@ -15,7 +15,7 @@ function getActionsDescript() {
 		index = index + 1
 		const action = actionsMap[key].action
 		actionsDescript += `action: ${action.name}, descript:${action.descript}`
-		actionsDescript += action.args ? `,args:${JSON.stringify(action.args)};\n` : ''
+		actionsDescript += action.args ? `,args:${JSON.stringify(action.args)};\n` : ';\n'
 	}
 	return actionsDescript
 }
