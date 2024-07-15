@@ -1,0 +1,35 @@
+.auio-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.auio-img-svg {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+}
+
+.circle-animation {  
+    z-index: -1;
+    position: absolute;
+    width: 20px; /* 初始大小 */  
+    height: 20px;  
+    background-color: blue; /* 圆圈颜色 */  
+    border-radius: 50%; /* 设置为圆形 */  
+    margin: 50px; /* 外边距，为了更好的展示效果 */  
+    animation: scaleAnimation 2s infinite alternate; /* 调用动画，设置动画持续时间、重复次数以及动画方向 */  
+  }  
+    
+  @keyframes scaleAnimation {  
+    from {  
+      transform: scale(0); /* 开始时，缩小到无 */  
+    }  
+    to {  
+      transform: scale(1.5); /* 结束时，放大到初始大小的2倍 */  
+    }  
+  }

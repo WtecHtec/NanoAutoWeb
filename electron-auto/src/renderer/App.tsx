@@ -5,16 +5,20 @@
 /* eslint-disable no-undef */
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import AudioSvg from '../../assets/audio.svg'
 
 
 let recordedChunks: any[] = [];
 function Main() {
-
+	const recordRef = useRef<HTMLImageElement>(null);
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const mediaRecorder = useRef<MediaRecorder>();
 	const [recording, setRecording] = useState(false);
 
+	useEffect(() => {
+		
+	}, [])
 	const handelRecord = async () => {
 		const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 		mediaRecorder.current = new MediaRecorder(stream);
@@ -27,8 +31,8 @@ function Main() {
 	
 		mediaRecorder.current.onstop = () => {
 			const blob = new Blob(recordedChunks, { type: 'audio/wav; codecs=opus' });
-			const audioURL = URL.createObjectURL(blob);
-			audioRef.current!.src = audioURL;
+			// const audioURL = URL.createObjectURL(blob);
+			// audioRef.current!.src = audioURL;
 			recordedChunks = [];
 		};
 	
@@ -42,10 +46,14 @@ function Main() {
 	}
   return (
     <>
-      <h1>Electron Audio Recording</h1>
+	<div className="auio-container">
+		<div className="circle-animation" style={{ opacity: recording ? 1 : 0 }}></div>
+		<img ref={recordRef} src={AudioSvg} alt="AudioSvg" className="auio-img-svg" />
+	</div>
+      {/* <h1>Electron Audio Recording</h1>
       <button onClick={handelRecord} disabled={recording}>Start Recording</button>
 			<button onClick={handelStop} disabled={!recording}>Stop Recording</button>
-			<audio ref={audioRef} controls></audio>
+			<audio ref={audioRef} controls></audio> */}
 		</>
 	);
 }

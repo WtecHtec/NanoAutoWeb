@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Recording with Visualization</title>
+    <style>
+        #visualizer {
+            width: 100%;
+            height: 200px;
+            background: #333;
+        }
+        button {
+            margin: 20px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <button id="record">Start Recording</button>
+    <canvas id="visualizer"></canvas>
+
+    <script>
+
+
+const recordButton = document.getElementById('record');
+const canvas = document.getElementById('visualizer');
+const canvasCtx = canvas.getContext('2d');
+
+let audioContext;
+let analyser;
+let microphone;
+let dataArray;
+let bufferLength;
+
+recordButton.addEventListener('click', async () => {
+    if (recordButton.textContent === 'Start Recording') {
+        await startRecording();
+        recordButton.textContent = 'Stop Recording';
+    } else {
+        stopRecording();
+        recordButton.textContent = 'Start Recording';
+    }
+});
+
+async function startRecording() {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphone = audioContext.createMediaStreamSource(stream);
+        microphone.connect(analyser);
+
+        analyser.fftSize = 2048;
+        bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+
+        draw();
+    } catch (err) {
+        console.error('Error accessing the microphone', err);
+    }
+}
+
+function stopRecording() {
+    audioContext.close();
+}
+
+function draw() {
+    requestAnimationFrame(draw);
+
+    analyser.getByteTimeDomainData(dataArray);
+
+    canvasCtx.fillStyle = 'rgb(51, 51, 51)';
+    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+    canvasCtx.lineWidth = 2;
+    canvasCtx.strokeStyle = 'rgb(0, 255, 0)';
+
+    canvasCtx.beginPath();
+
+    const sliceWidth = canvas.width / bufferLength;
+    let x = 0;
+
+    for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = (v * canvas.height) / 2;
+
+        if (i === 0) {
+            canvasCtx.moveTo(x, y);
+        } else {
+            canvasCtx.lineTo(x, y);
+        }
+
+        x += sliceWidth;
+    }
+
+    canvasCtx.lineTo(canvas.width, canvas.height / 2);
+    canvasCtx.stroke();
+}
+
+
+    </script>
+</body>
+</html>

@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain,  screen, } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -39,9 +39,9 @@ if (process.env.NODE_ENV === 'production') {
 const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
-if (isDebug) {
-  require('electron-debug')();
-}
+// if (isDebug) {
+//   require('electron-debug')();
+// }
 
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
@@ -69,10 +69,21 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
+  	// 获取屏幕的主显示器信息
+	const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
+	// 设置窗口的宽度和高度
+	const windowWidth = 100;
+	const windowHeight = 100;
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: windowWidth,
+		height: windowHeight,
+		x: width - windowWidth,
+		y: height - windowHeight,
+		frame: true, // 无边框
+		transparent: true, // 透明窗口
+		alwaysOnTop: true, // 窗口总是显示在最前面
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged

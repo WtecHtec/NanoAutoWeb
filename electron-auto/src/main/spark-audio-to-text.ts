@@ -1,8 +1,7 @@
 import axios from 'axios';
-
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
+import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 
 class SparkAudioToText {
   appid: string;
