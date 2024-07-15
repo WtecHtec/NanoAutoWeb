@@ -9,9 +9,10 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain,  screen, } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, screen } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import fs from 'fs';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -39,9 +40,9 @@ if (process.env.NODE_ENV === 'production') {
 const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
-// if (isDebug) {
-//   require('electron-debug')();
-// }
+if (isDebug) {
+  require('electron-debug')();
+}
 
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
@@ -69,7 +70,7 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
-  	// 获取屏幕的主显示器信息
+  // 获取屏幕的主显示器信息
 	const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
 	// 设置窗口的宽度和高度
@@ -79,8 +80,8 @@ const createWindow = async () => {
     show: false,
     width: windowWidth,
 		height: windowHeight,
-		x: width - windowWidth,
-		y: height - windowHeight,
+		// x: width - windowWidth,
+		// y: height - windowHeight,
 		frame: true, // 无边框
 		transparent: true, // 透明窗口
 		alwaysOnTop: true, // 窗口总是显示在最前面
@@ -139,6 +140,17 @@ app
   .whenReady()
   .then(() => {
     createWindow();
+
+    ipcMain.on('exprot-blob-render', async (_, { buffer }) => {
+      // Mp4Demux.demux(arrayBuffer)
+      const buf = Buffer.from(buffer);
+      const outputPath = path.join(
+        __dirname,
+        'audio-recorder.wav',
+      );
+      fs.writeFileSync(outputPath, buf);
+    });
+
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

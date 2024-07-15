@@ -8,42 +8,92 @@ import './App.css';
 import { useEffect, useRef, useState } from 'react';
 import AudioSvg from '../../assets/audio.svg'
 
+function blobToArrayBuffer(blob) {
+	return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = (event) => {
+					resolve(event.target!.result);
+			};
+			reader.onerror = (event) => {
+					reject(new Error(`FileReader error: ${event.target!.error}`));
+			};
+			reader.readAsArrayBuffer(blob);
+	});
+}
 
-let recordedChunks: any[] = [];
 function Main() {
 	const recordRef = useRef<HTMLImageElement>(null);
 	const audioRef = useRef<HTMLAudioElement>(null);
-	const mediaRecorder = useRef<MediaRecorder>();
+	const mediaRecorder = useRef<any>({
+		recorder: null,
+		recordedChunks: [],
+	});
 	const [recording, setRecording] = useState(false);
 
-	useEffect(() => {
-		
-	}, [])
+
 	const handelRecord = async () => {
 		const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-		mediaRecorder.current = new MediaRecorder(stream);
+		mediaRecorder.current.recorder = new MediaRecorder(stream);
 	
-		mediaRecorder.current.ondataavailable = (event) => {
+		mediaRecorder.current.recorder.ondataavailable = (event) => {
 			if (event.data.size > 0) {
-				recordedChunks.push(event.data);
+				mediaRecorder.current.recordedChunks.push(event.data);
 			}
 		};
 	
-		mediaRecorder.current.onstop = () => {
-			const blob = new Blob(recordedChunks, { type: 'audio/wav; codecs=opus' });
-			// const audioURL = URL.createObjectURL(blob);
-			// audioRef.current!.src = audioURL;
-			recordedChunks = [];
+		mediaRecorder.current.recorder.onstop = async () => {
+			const { recordedChunks } = mediaRecorder.current;
+			const blob = new Blob(recordedChunks, { type: 'audio/wav' });
+			const arrayBuffer = await blob.arrayBuffer();
+			window.electron.ipcRenderer.sendMessage('exprot-blob-render', { buffer: arrayBuffer }); 
+			return;
+				const audioURL = URL.createObjectURL(blob);
+				// eslint-disable-next-line promise/catch-or-return
+				fetch(audioURL)  
+				.then(response => response.blob())  
+				// eslint-disable-next-line @typescript-eslint/no-shadow
+				.then(blob => {  
+					// 将 Blob 对象转换为 ArrayBuffer，以便通过 IPC 发送  
+					return new Promise((resolve, reject) => {  
+						const reader = new FileReader();  
+						reader.onload = (event: any) => resolve(event.target.result);  
+						reader.onerror = (event: any)  => reject(event.error);  
+						reader.readAsArrayBuffer(blob);  
+					});  
+				})  
+				// eslint-disable-next-line promise/always-return
+				.then(async (arrayBuffer) => {  
+					window.electron.ipcRenderer.sendMessage('exprot-blob-render', { buffer: arrayBuffer }); 
+				})
+			// const buffer = await blobToArrayBuffer(blob);
+			// await window.electron.ipcRenderer.sendMessage('exprot-blob-render',  { buffer }); 
+		
+			audioRef.current!.src = audioURL;
+			mediaRecorder.current.recordedChunks = [];
 		};
 	
-		mediaRecorder.current.start();
+		mediaRecorder.current.recorder.start();
 		setRecording(true);
 	}
 
 	const handelStop = () => {
-	    mediaRecorder.current!.stop();
+	    mediaRecorder.current.recorder!.stop();
 			setRecording(false);
 	}
+	useEffect(() => {
+		// eslint-disable-next-line no-useless-return
+		if (!recordRef.current) return;
+		const recordRefDom = 	recordRef.current
+		recordRefDom.addEventListener('mousedown', handelRecord);
+		recordRefDom.addEventListener('mouseup', handelStop);
+		const cleanup = () => {
+			recordRefDom!.removeEventListener('mousedown', handelRecord);
+			recordRefDom!.removeEventListener('mouseup', handelStop);
+		}
+		// eslint-disable-next-line consistent-return
+		return cleanup;
+	}, [])
+
   return (
     <>
 	<div className="auio-container">

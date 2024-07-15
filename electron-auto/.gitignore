@@ -31,3 +31,4 @@ npm-debug.log.*
 
 package-lock.json
 env.json
+audio-recorder.wav

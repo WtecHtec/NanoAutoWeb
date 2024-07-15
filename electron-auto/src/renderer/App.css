@@ -22,7 +22,7 @@
     background-color: blue; /* 圆圈颜色 */  
     border-radius: 50%; /* 设置为圆形 */  
     margin: 50px; /* 外边距，为了更好的展示效果 */  
-    animation: scaleAnimation 2s infinite alternate; /* 调用动画，设置动画持续时间、重复次数以及动画方向 */  
+    animation: scaleAnimation 1s infinite alternate; /* 调用动画，设置动画持续时间、重复次数以及动画方向 */  
   }  
     
   @keyframes scaleAnimation {  
