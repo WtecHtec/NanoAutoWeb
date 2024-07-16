@@ -22,12 +22,22 @@ function getTextFromOrder(orderResult) {
   } catch (error) {
     console.log(error);
   }
-
   return result;
 }
 function main() {
   const result = getTextFromOrder(orderResult);
   console.log(result);
   // console.log(result.lattice[0].json_1best.st.rt[0].ws[0].cw[0].w);
+}
+
+let cache = {}
+function deepcopy(obj) {
+  const result = {}
+  for (const key in obj) {
+    
+    result[key] = deepcopy[key]
+    cache[key] = result
+  }
+  return result
 }
 main();
