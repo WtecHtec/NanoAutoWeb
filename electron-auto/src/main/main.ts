@@ -15,6 +15,12 @@ import log from 'electron-log';
 import fs from 'fs';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import SparkAudioToText from './spark-audio-to-text';
+
+import ENV from '../../env.json';
+
+
+const sparkAudioToText =  new SparkAudioToText({ appid: ENV.APPID, secretkey: ENV.SECRET_KEY, });
 
 class AppUpdater {
   constructor() {
@@ -139,19 +145,29 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
+    log.info('whenReady');
     createWindow();
 
     ipcMain.on('exprot-blob-render', async (_, { buffer }) => {
       // Mp4Demux.demux(arrayBuffer)
-      const buf = Buffer.from(buffer);
+      // const buf = Buffer.from(buffer);
+      // const outputPath = path.join(
+      //   __dirname,
+      //   'audio-recorder.wav',
+      // );
+      // fs.writeFileSync(outputPath, buf);
+      
       const outputPath = path.join(
         __dirname,
-        'audio-recorder.wav',
+        './data.wav',
       );
-      fs.writeFileSync(outputPath, buf);
+      console.log('exprot-blob-render---', outputPath);
+      const text = await sparkAudioToText.audioToText(outputPath);
+      console.log('exprot-blob-render---', text);
     });
 
     app.on('activate', () => {
+      log.info('activate');
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) createWindow();

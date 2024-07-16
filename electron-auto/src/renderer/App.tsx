@@ -8,30 +8,19 @@ import './App.css';
 import { useEffect, useRef, useState } from 'react';
 import AudioSvg from '../../assets/audio.svg'
 
-function blobToArrayBuffer(blob) {
-	return new Promise((resolve, reject) => {
-			const reader = new FileReader();
-			reader.onload = (event) => {
-					resolve(event.target!.result);
-			};
-			reader.onerror = (event) => {
-					reject(new Error(`FileReader error: ${event.target!.error}`));
-			};
-			reader.readAsArrayBuffer(blob);
-	});
-}
-
 function Main() {
 	const recordRef = useRef<HTMLImageElement>(null);
-	const audioRef = useRef<HTMLAudioElement>(null);
+	// const audioRef = useRef<HTMLAudioElement>(null);
 	const mediaRecorder = useRef<any>({
 		recorder: null,
 		recordedChunks: [],
+		handleing: false,
 	});
 	const [recording, setRecording] = useState(false);
 
 
 	const handelRecord = async () => {
+		if (mediaRecorder.current.handleing) return;
 		const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 		mediaRecorder.current.recorder = new MediaRecorder(stream);
 	
@@ -45,30 +34,8 @@ function Main() {
 			const { recordedChunks } = mediaRecorder.current;
 			const blob = new Blob(recordedChunks, { type: 'audio/wav' });
 			const arrayBuffer = await blob.arrayBuffer();
+			mediaRecorder.current.handleing = true;
 			window.electron.ipcRenderer.sendMessage('exprot-blob-render', { buffer: arrayBuffer }); 
-			return;
-				const audioURL = URL.createObjectURL(blob);
-				// eslint-disable-next-line promise/catch-or-return
-				fetch(audioURL)  
-				.then(response => response.blob())  
-				// eslint-disable-next-line @typescript-eslint/no-shadow
-				.then(blob => {  
-					// 将 Blob 对象转换为 ArrayBuffer，以便通过 IPC 发送  
-					return new Promise((resolve, reject) => {  
-						const reader = new FileReader();  
-						reader.onload = (event: any) => resolve(event.target.result);  
-						reader.onerror = (event: any)  => reject(event.error);  
-						reader.readAsArrayBuffer(blob);  
-					});  
-				})  
-				// eslint-disable-next-line promise/always-return
-				.then(async (arrayBuffer) => {  
-					window.electron.ipcRenderer.sendMessage('exprot-blob-render', { buffer: arrayBuffer }); 
-				})
-			// const buffer = await blobToArrayBuffer(blob);
-			// await window.electron.ipcRenderer.sendMessage('exprot-blob-render',  { buffer }); 
-		
-			audioRef.current!.src = audioURL;
 			mediaRecorder.current.recordedChunks = [];
 		};
 	
@@ -77,13 +44,16 @@ function Main() {
 	}
 
 	const handelStop = () => {
+		console.log('stop')
+		setRecording(false);
+		if (!mediaRecorder.current.recorder) return
 	    mediaRecorder.current.recorder!.stop();
-			setRecording(false);
+		
 	}
 	useEffect(() => {
 		// eslint-disable-next-line no-useless-return
 		if (!recordRef.current) return;
-		const recordRefDom = 	recordRef.current
+		const recordRefDom = recordRef.current
 		recordRefDom.addEventListener('mousedown', handelRecord);
 		recordRefDom.addEventListener('mouseup', handelStop);
 		const cleanup = () => {
@@ -94,6 +64,15 @@ function Main() {
 		return cleanup;
 	}, [])
 
+	useEffect(() => {
+		const handle = () => {
+			mediaRecorder.current.handleing = false;
+		}
+		window.electron.ipcRenderer.on('finish_spark_main', handle);
+		return () => {
+			window.electron.ipcRenderer.off('finish_spark_main', handle);
+		}
+	}, [])
   return (
     <>
 	<div className="auio-container">

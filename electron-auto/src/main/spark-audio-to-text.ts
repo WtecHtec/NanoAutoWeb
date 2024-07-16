@@ -11,6 +11,7 @@ class SparkAudioToText {
   maxRetries: any;
   delayTime: number;
   uploadUrl: string;
+  signa: string;
   constructor({ appid, secretkey, maxRetries = 20,  }: any) {
     this.appid = appid;
     this.secretkey = secretkey;
@@ -19,6 +20,7 @@ class SparkAudioToText {
     this.ts = new Date().getTime();
     this.maxRetries = maxRetries;
     this.delayTime = 30 * 1000;
+    this.signa = '';
   }
 
   getAppidMd5() {
@@ -115,7 +117,30 @@ class SparkAudioToText {
     });
   }
 
-  async audioToText(filePath: any) {
+  getTextFromOrder(orderResult: string) {
+    let result = '';
+    try {
+      const json = JSON.parse(orderResult);
+      const { lattice } = json;
+      // eslint-disable-next-line camelcase
+      const { json_1best } = lattice[0];
+      const jsonBest = JSON.parse(json_1best);
+      const { rt } = jsonBest.st;
+  
+      rt.forEach((item: { ws: any[]; }) => {
+        item.ws.forEach((ws) => {
+          ws.cw.forEach((cw: { w: any; }) => {
+            result = `${result}${cw.w} `;
+          });
+        });
+      });
+    } catch (error) {
+      console.log(error);
+    }
+    return result;
+  }
+
+  async audioToResult(filePath: any) {
     const [code, orderId, taskEstimateTime] = await this.upload(filePath) as any;
     if (code === 1) {
       this.delayTime = taskEstimateTime || 30 * 1000;
@@ -141,6 +166,13 @@ class SparkAudioToText {
       }
     }
     return [0, 'fail'];
+  }
+  async audioToText(filePath: any) {
+    const [code, result] = await this.audioToResult(filePath)
+    if (code === 1) {
+      return this.getTextFromOrder(result.orderResult);
+    }
+    return null;
   }
 }
 
