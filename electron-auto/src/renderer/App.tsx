@@ -6,8 +6,9 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import { useEffect, useRef, useState } from 'react';
-import AudioSvg from '../../assets/audio.svg'
+import AudioSvg from '../../assets/audio.svg';
 
+const sampleRate = 16000;
 function Main() {
 	const recordRef = useRef<HTMLImageElement>(null);
 	// const audioRef = useRef<HTMLAudioElement>(null);
@@ -26,7 +27,7 @@ function Main() {
 		const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 		mediaRecorder.current.recorder = new MediaRecorder(stream);
 
-		const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+		const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate });
 		const input = audioContext.createMediaStreamSource(stream);
     const processor = audioContext.createScriptProcessor(4096, 1, 1);
 
@@ -52,10 +53,10 @@ function Main() {
 		mediaRecorder.current.recorder.onstop = async () => {
 			const { recordedChunks } = mediaRecorder.current;
 			// const blob = new Blob(recordedChunks, { type: 'audio/pcm' });
-			const blob = new Blob([new Int16Array(recordedChunks).buffer], { type: 'audio/pcm' });
-			const arrayBuffer = await blob.arrayBuffer();
+			// const blob = new Blob([new Int16Array(recordedChunks).buffer], { type: 'audio/pcm' });
+			// const arrayBuffer = await blob.arrayBuffer();
 			mediaRecorder.current.handleing = true;
-			window.electron.ipcRenderer.sendMessage('exprot-blob-render', { buffer: arrayBuffer }); 
+			window.electron.ipcRenderer.sendMessage('exprot-blob-render', { buffer: new Int16Array(recordedChunks).buffer }); 
 			setAgentIng(true)
 			mediaRecorder.current.recordedChunks = [];
 		};
@@ -89,7 +90,8 @@ function Main() {
 		const handle = () => {
 			mediaRecorder.current.handleing = false;
 		}
-		const handleAgent = (result) => {
+		const handleAgent = (_, result) => {
+			console.log('result---', result);
 			const [prompt, data] = result
 			const nwMsgs = [{
 				role: 'user',
@@ -106,6 +108,7 @@ function Main() {
 					content: '未知错误'
 				})
 			}
+			// eslint-disable-next-line @typescript-eslint/no-shadow
 			setMsgList((msgList: any) => [...msgList, ...nwMsgs])
 			setAgentIng(false)
 			mediaRecorder.current.handleing = false
@@ -119,10 +122,14 @@ function Main() {
 	}, [])
   return (
     <>
-	<div className="auio-container">
-		<div className="circle-animation" style={{ opacity: recording ? 1 : 0 }}></div>
-		<img ref={recordRef} src={AudioSvg} alt="AudioSvg" className="auio-img-svg" />
-	</div>
+		<div className="">
+			 <input></input>
+			 <div className="auio-container">
+				<div className="circle-animation" style={{ opacity: recording ? 1 : 0 }}></div>
+				<img ref={recordRef} src={AudioSvg} alt="AudioSvg" className="auio-img-svg" />
+			</div>
+		</div>
+
 	<ul style={{ overflow: 'auto', height: '100%'}}>
 		{
 			msgList.map((item: any) => {

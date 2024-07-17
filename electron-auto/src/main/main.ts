@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import fs from 'fs';
@@ -20,9 +20,11 @@ import SparkAudioWss from './spark-audio-wss';
 import ENV from '../../env.json';
 import { post } from './server';
 
-const sparkAudioWss = new SparkAudioWss({ appid: ENV.WSS_APPID, apiKey: ENV.WSS_SECRET_KEY, hostUrl: ENV.WSS_HOST });
-
-
+const sparkAudioWss = new SparkAudioWss({
+  appid: ENV.WSS_APPID,
+  apiKey: ENV.WSS_SECRET_KEY,
+  hostUrl: ENV.WSS_HOST,
+});
 
 class AppUpdater {
   constructor() {
@@ -72,11 +74,12 @@ const createWindow = async () => {
   }
 
   if (!audioWssStatus) {
+    // eslint-disable-next-line promise/catch-or-return
     sparkAudioWss.startWss().then((code) => {
       if (code === 1) {
         audioWssStatus = true;
       }
-    })
+    });
   }
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
@@ -87,7 +90,7 @@ const createWindow = async () => {
   };
 
   // 获取屏幕的主显示器信息
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  // const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
   // 设置窗口的宽度和高度
   const windowWidth = 400;
@@ -137,7 +140,7 @@ const createWindow = async () => {
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
-  new AppUpdater();
+  // new AppUpdater();
 };
 
 /**
@@ -152,32 +155,35 @@ app.on('window-all-closed', () => {
   }
 });
 
+async function postAgent(prompt: string) {
+  const result = await post(prompt);
+  console.log('postAgent---', result);
+  mainWindow?.webContents.send('agent_main', [prompt, result]);
+}
+
 function handleAgent(outputPath: string) {
+  console.log('handleAgent----', outputPath);
   const readerStream = fs.createReadStream(outputPath, {
-    highWaterMark: 1280
+    highWaterMark: 1280,
   });
   readerStream.on('data', (chunk) => {
-    console.log(chunk.length)
-    sparkAudioWss.sendAudioStream(chunk)
+    sparkAudioWss.sendAudioStream(chunk);
   });
   readerStream.on('end', () => {
     // 最终帧发送结束
-    console.log('readerStream----end')
-    sparkAudioWss.endAudioStream()
+    console.log('readerStream----end');
+		readerStream.close();
+    sparkAudioWss.endAudioStream();
   });
 
   sparkAudioWss.onMessage((item: any) => {
-    console.log(item)
-    const [code, result] = item
-    if (code === 2) { 
+    console.log(item);
+    const [code, result] = item;
+    if (code === 2) {
       console.log('exprot-blob-render--- handle agent', result);
+      postAgent(result);
     }
-  })
-}
-
-async function postAgent(prompt: string) {
-  const result = await post(prompt)
-  mainWindow?.webContents.send('agent_main', [prompt, result] )
+  });
 }
 
 app
@@ -186,37 +192,34 @@ app
     log.info('whenReady');
     createWindow();
 
-    ipcMain.on('exprot-blob-render', async (_, { buffer }) => {
+    ipcMain.on('exprot-blob-render', (_, { buffer }) => {
       // Mp4Demux.demux(arrayBuffer)
-      // const buf = Buffer.from(buffer);
-      // const outputPath = path.join(
-      //   __dirname,
-      //   'audio-recorder.pcm',
-      // );
-      // fs.writeFileSync(outputPath, buf);
-      postAgent('切换浅色模式')
-
-      return;
-
-
-
+      const buf = Buffer.from(buffer);
       const outputPath = path.join(
         __dirname,
-        './recording.pcm',
+        `./audio-pcm/audio-recorder_${new Date().getTime()}.pcm`,
       );
-      console.log('exprot-blob-render---', outputPath);
+      // fs.writeFile(outputPath, buf, (err) => {
+      // 	 postAgent('切换浅色模式');
+      // })
+      fs.writeFileSync(outputPath, buf);
 
-     
-
+      // const outputPath = path.join(
+      //   __dirname,
+      //   './recording.pcm',
+      // );
+      // console.log('exprot-blob-render---', outputPath);
+      // console.log('exprot-blob-render---', audioWssStatus, outputPath);
       if (audioWssStatus) {
         handleAgent(outputPath);
       } else {
+        // eslint-disable-next-line promise/catch-or-return, promise/no-nesting
         sparkAudioWss.startWss().then((code) => {
           if (code === 1) {
             audioWssStatus = true;
             handleAgent(outputPath);
           }
-        })
+        });
       }
       // console.log('exprot-blob-render---', text);
     });
