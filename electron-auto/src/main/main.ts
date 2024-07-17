@@ -18,6 +18,7 @@ import { resolveHtmlPath } from './util';
 import SparkAudioWss from './spark-audio-wss';
 
 import ENV from '../../env.json';
+import { post } from './server';
 
 const sparkAudioWss = new SparkAudioWss({ appid: ENV.WSS_APPID, apiKey: ENV.WSS_SECRET_KEY, hostUrl: ENV.WSS_HOST });
 
@@ -89,8 +90,8 @@ const createWindow = async () => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
   // 设置窗口的宽度和高度
-  const windowWidth = 100;
-  const windowHeight = 100;
+  const windowWidth = 400;
+  const windowHeight = 500;
   mainWindow = new BrowserWindow({
     show: false,
     width: windowWidth,
@@ -98,8 +99,8 @@ const createWindow = async () => {
     // x: width - windowWidth,
     // y: height - windowHeight,
     frame: true, // 无边框
-    transparent: true, // 透明窗口
-    alwaysOnTop: true, // 窗口总是显示在最前面
+    // transparent: true, // 透明窗口
+    // alwaysOnTop: true, // 窗口总是显示在最前面
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -174,6 +175,11 @@ function handleAgent(outputPath: string) {
   })
 }
 
+async function postAgent(prompt: string) {
+  const result = await post(prompt)
+  mainWindow?.webContents.send('agent_main', [prompt, result] )
+}
+
 app
   .whenReady()
   .then(() => {
@@ -188,6 +194,9 @@ app
       //   'audio-recorder.pcm',
       // );
       // fs.writeFileSync(outputPath, buf);
+      postAgent('切换浅色模式')
+
+      return;
 
 
 

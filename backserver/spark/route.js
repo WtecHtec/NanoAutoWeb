@@ -3,7 +3,8 @@ const getJueJin = require('../tools/getJueJin');
 const request = require('./request')
 const express = require('express');
 const router = express.Router();
-const writeFile = require('../tools/writeFile')
+// const writeFile = require('../tools/writeFile')
+const WorkLLM = require('../scripts/work.llm')
 
 router.post('/chat', async (req, res) => {
     const data = req.body;
@@ -52,6 +53,18 @@ router.post('/summary', async (req, res) => {
     } else {
         res.json({ code: err, msg: '异常错误' });
     }
+});
+
+// agent
+router.post('/agent', async (req, res) => {
+    const data = req.body;
+    console.log(data);
+    if (!data || !data.prompt) {
+        res.json({ code: -1, msg: '参数错误' });
+        return
+    }
+    const [code, result] =  await WorkLLM(data.prompt)
+    res.json({ code, data: result, msg: '请求成功' });
 });
 
 

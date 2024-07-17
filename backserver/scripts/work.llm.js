@@ -63,34 +63,34 @@ function getMessage(line) {
 						await runDelay(2000)
 					}
 				}
-				resolve(1)
+				resolve([1, content])
 				return;
 			}
-			const { action, thoughts, observation } = content
-			const { name, args } = action
-			const { speak, plan,reasoning, criticism } = thoughts
-			if (name === 'finish') {
-				console.log('处理完成')
-				resolve(1)
-				return
-			}
-			// 执行action，记录当前action的执行结果 agentScratch
-			if (actionsMap[name])  {
-				const { script, isFunc, result } = actionsMap[name]
-				if (isFunc) {
-						await script(item)
-				} else {
-					script && await runAppleScript(typeof script === 'string' ? script : script(args))
-				}
-				agentScratch = `${agentScratch}\n: observation:${speak}\n execute action result: ${result}`
-			}
-			// 从response 中拿出来想要用的信息
-			const assistantMsg = `plan: ${plan}\nreasoning: ${reasoning}\ncriticism: ${criticism}\nobservation: ${observation}\n`
-			histroy.push([NextActionPrompt, assistantMsg])
-			resolve(0)
+			// const { action, thoughts, observation } = content
+			// const { name, args } = action
+			// const { speak, plan,reasoning, criticism } = thoughts
+			// if (name === 'finish') {
+			// 	console.log('处理完成')
+			// 	resolve(1)
+			// 	return
+			// }
+			// // 执行action，记录当前action的执行结果 agentScratch
+			// if (actionsMap[name])  {
+			// 	const { script, isFunc, result } = actionsMap[name]
+			// 	if (isFunc) {
+			// 			await script(item)
+			// 	} else {
+			// 		script && await runAppleScript(typeof script === 'string' ? script : script(args))
+			// 	}
+			// 	agentScratch = `${agentScratch}\n: observation:${speak}\n execute action result: ${result}`
+			// }
+			// // 从response 中拿出来想要用的信息
+			// const assistantMsg = `plan: ${plan}\nreasoning: ${reasoning}\ncriticism: ${criticism}\nobservation: ${observation}\n`
+			// histroy.push([NextActionPrompt, assistantMsg])
+			resolve([0, content])
 		} catch (error) {
 			console.log('hanldeCurrentStep error:', error)
-			resolve(-1)
+			resolve([-1, error])
 		}
 	})
 }
@@ -102,9 +102,9 @@ async function WorkLLM(line) {
 			const [err, result] = await request(message)
 			// console.log('result:', result)
 			if (err === 0 && result && result[0].message) {
-				const stepResult = await hanldeCurrentStep(result[0].message)
+				const [stepResult, content] = await hanldeCurrentStep(result[0].message)
 				if (stepResult === 1) {
-					resolve('finish')
+					resolve([1, content])
 					return
 				} else {
 					step = step + 1
@@ -114,7 +114,7 @@ async function WorkLLM(line) {
 						console.log('step:', step, 
 							stepResult === 0 ? ': ---- action 成功' : ': ---- action 错误',
 							'超出最大步数')
-						resolve('2')
+						resolve([2,])
 					}
 				}
 			} else {
@@ -122,7 +122,7 @@ async function WorkLLM(line) {
 				console.log('step:', step, ': ---- llm 错误')
 				if (step >= MAX_STEP) {
 					console.log('step:', step, ': ---- llm 错误 超出最大步数')
-					resolve('2')
+					resolve([2])
 				}
 			}
 		}

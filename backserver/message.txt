@@ -6,7 +6,7 @@
 		2、从目标中发现可能的策略；
 		3、根据策略做出动作；
 		# 目标:
-    帮我完成一个静态HTML页面
+    切换浅色模式
     #限制条件说明:
     1、仅使用下面列出的动作；
     2、你只能主动行动，在计划行动时需要考虑这一点；
@@ -15,8 +15,16 @@
 		这是你唯一可使用的动作，你的任何操作都必须通过以下操作组合完成目标,需要参数字段可以参考args描述：
     action: mkdir, descript:创建一个文件夹。并且返回一个绝对路径,args:[{"name":"dirpath","type":"string","description":"文件夹路径"}];
 action: writeFile, descript:将大模型数据写入文件。并且返回一个绝对路径,args:[{"name":"filepath","type":"string","description":"文件路径"},{"name":"data","type":"string","description":"数据"}];
-action: finish, descript:完成用户目标action: darkTheme, descript:电脑主题切换深色主题。action: lightTheme, descript:电脑主题切换浅色主题。action: openQQMusic, descript:打开QQ音乐应用。action: playMusic, descript:立即播放QQ音乐歌曲。action: searchMusic, descript:打开QQ音乐搜索框,输入关键词搜索音乐。,args:[{"name":"keyWord","type":"string","description":"关键词、歌曲名、歌手名"}];
-action: nextSong, descript:上一首歌，切换歌曲action: previousSong, descript:下一首歌，切换歌曲action: openVsCode, descript:打开Vscode。action: openCodeToVscode, descript:根据代码文件夹路径打开Vscode。vscode打开代码文件夹,args:[{"name":"codePath","type":"string","description":"代码文件夹路径"}];
+action: finish, descript:完成用户目标;
+action: darkTheme, descript:电脑主题切换深色主题。;
+action: lightTheme, descript:电脑主题切换浅色主题。;
+action: openQQMusic, descript:打开QQ音乐应用。;
+action: playMusic, descript:立即播放QQ音乐歌曲。;
+action: searchMusic, descript:打开QQ音乐搜索框,输入关键词搜索音乐。,args:[{"name":"keyWord","type":"string","description":"关键词、歌曲名、歌手名"}];
+action: nextSong, descript:上一首歌，切换歌曲;
+action: previousSong, descript:下一首歌，切换歌曲;
+action: openVsCode, descript:打开Vscode。;
+action: openCodeToVscode, descript:根据代码文件夹路径打开Vscode。vscode打开代码文件夹,args:[{"name":"codePath","type":"string","description":"代码文件夹路径"}];
 ;
 		#资源说明：
 		1、你是一个大语言模型，接受了大量文本的训练，包括大量的事实知识，利用这些知识避免不必要的信息收集和推理；

@@ -22,7 +22,7 @@
     background-color: blue; /* 圆圈颜色 */  
     border-radius: 50%; /* 设置为圆形 */  
     margin: 50px; /* 外边距，为了更好的展示效果 */  
-    animation: scaleAnimation 1s infinite alternate; /* 调用动画，设置动画持续时间、重复次数以及动画方向 */  
+    animation: scaleAnimation .3s infinite alternate; /* 调用动画，设置动画持续时间、重复次数以及动画方向 */  
   }  
     
   @keyframes scaleAnimation {  
@@ -30,6 +30,53 @@
       transform: scale(0); /* 开始时，缩小到无 */  
     }  
     to {  
-      transform: scale(1.5); /* 结束时，放大到初始大小的2倍 */  
+      transform: scale(1.3); /* 结束时，放大到初始大小的2倍 */  
     }  
+  }
+
+  
+  .opacity-animation {  
+    animation: opacityAnimation .3s; /* 调用动画，设置动画持续时间、重复次数以及动画方向 */  
+    animation-fill-mode: forwards;
+  }  
+    
+  @keyframes opacityAnimation {  
+    from {  
+      opacity: 0; /* 开始时，透明度为0 */  
+    }  
+    to {  
+      opacity: 1; /* 结束时，透明度为1 */  
+    }  
+  }
+  .opacity-hide-animation {  
+    animation: opacityhideAnimation .3s; /* 调用动画，设置动画持续时间、重复次数以及动画方向 */  
+    animation-fill-mode: forwards;
+  }  
+    
+  @keyframes opacityhideAnimation {  
+    from {  
+      opacity: 1; /* 开始时，透明度为0 */  
+    }  
+    to {  
+      opacity: 0; /* 结束时，透明度为1 */  
+    }  
+  }
+  
+  
+  
+  .user-content {
+    margin: 12px 0;
+  }
+
+  .error {
+    color: red;
+  }
+
+  .system-content {
+    padding: 20px;
+    background-color: rgba(99,99,99, .2);
+  }
+
+  .agent-ing {
+    text-align: center;
   }
