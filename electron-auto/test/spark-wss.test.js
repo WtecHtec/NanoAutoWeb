@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const SparkWssAudio = require('./spark-wss.js');
 // 开始读取文件进行传输
-const readerStream = fs.createReadStream(path.join(__dirname, './recording.pcm'), {
+const readerStream = fs.createReadStream(path.join(__dirname, './test_1.pcm'), {
 	highWaterMark: 1280
 });
 console.log(path.join(__dirname, './data.wav'))
@@ -20,9 +20,9 @@ function main() {
 		});
 		readerStream.on('end', () => {
 			// 最终帧发送结束
-			console.log('end')
+			console.log('readerStream----end')
 			sparkWssAudio.endAudioStream()
-    });
+    	});
 
 		sparkWssAudio.onMessage((item) => {
 			console.log(item)

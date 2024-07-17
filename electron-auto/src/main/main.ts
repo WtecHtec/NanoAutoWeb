@@ -15,12 +15,13 @@ import log from 'electron-log';
 import fs from 'fs';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import SparkAudioToText from './spark-audio-to-text';
+import SparkAudioWss from './spark-audio-wss';
 
 import ENV from '../../env.json';
 
+const sparkAudioWss = new SparkAudioWss({ appid: ENV.WSS_APPID, apiKey: ENV.WSS_SECRET_KEY, hostUrl: ENV.WSS_HOST });
 
-const sparkAudioToText =  new SparkAudioToText({ appid: ENV.APPID, secretkey: ENV.SECRET_KEY, });
+
 
 class AppUpdater {
   constructor() {
@@ -31,6 +32,7 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let audioWssStatus = false;
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -68,6 +70,13 @@ const createWindow = async () => {
     await installExtensions();
   }
 
+  if (!audioWssStatus) {
+    sparkAudioWss.startWss().then((code) => {
+      if (code === 1) {
+        audioWssStatus = true;
+      }
+    })
+  }
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
     : path.join(__dirname, '../../assets');
@@ -77,20 +86,20 @@ const createWindow = async () => {
   };
 
   // 获取屏幕的主显示器信息
-	const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
-	// 设置窗口的宽度和高度
-	const windowWidth = 100;
-	const windowHeight = 100;
+  // 设置窗口的宽度和高度
+  const windowWidth = 100;
+  const windowHeight = 100;
   mainWindow = new BrowserWindow({
     show: false,
     width: windowWidth,
-		height: windowHeight,
-		// x: width - windowWidth,
-		// y: height - windowHeight,
-		frame: true, // 无边框
-		transparent: true, // 透明窗口
-		alwaysOnTop: true, // 窗口总是显示在最前面
+    height: windowHeight,
+    // x: width - windowWidth,
+    // y: height - windowHeight,
+    frame: true, // 无边框
+    transparent: true, // 透明窗口
+    alwaysOnTop: true, // 窗口总是显示在最前面
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -142,6 +151,29 @@ app.on('window-all-closed', () => {
   }
 });
 
+function handleAgent(outputPath: string) {
+  const readerStream = fs.createReadStream(outputPath, {
+    highWaterMark: 1280
+  });
+  readerStream.on('data', (chunk) => {
+    console.log(chunk.length)
+    sparkAudioWss.sendAudioStream(chunk)
+  });
+  readerStream.on('end', () => {
+    // 最终帧发送结束
+    console.log('readerStream----end')
+    sparkAudioWss.endAudioStream()
+  });
+
+  sparkAudioWss.onMessage((item: any) => {
+    console.log(item)
+    const [code, result] = item
+    if (code === 2) { 
+      console.log('exprot-blob-render--- handle agent', result);
+    }
+  })
+}
+
 app
   .whenReady()
   .then(() => {
@@ -150,19 +182,33 @@ app
 
     ipcMain.on('exprot-blob-render', async (_, { buffer }) => {
       // Mp4Demux.demux(arrayBuffer)
-      const buf = Buffer.from(buffer);
-      const outputPath = path.join(
-        __dirname,
-        'audio-recorder.pcm',
-      );
-      fs.writeFileSync(outputPath, buf);
-      
+      // const buf = Buffer.from(buffer);
       // const outputPath = path.join(
       //   __dirname,
-      //   './data.pcm',
+      //   'audio-recorder.pcm',
       // );
-      // console.log('exprot-blob-render---', outputPath);
-      // const text = await sparkAudioToText.audioToText(outputPath);
+      // fs.writeFileSync(outputPath, buf);
+
+
+
+      const outputPath = path.join(
+        __dirname,
+        './recording.pcm',
+      );
+      console.log('exprot-blob-render---', outputPath);
+
+     
+
+      if (audioWssStatus) {
+        handleAgent(outputPath);
+      } else {
+        sparkAudioWss.startWss().then((code) => {
+          if (code === 1) {
+            audioWssStatus = true;
+            handleAgent(outputPath);
+          }
+        })
+      }
       // console.log('exprot-blob-render---', text);
     });
 
