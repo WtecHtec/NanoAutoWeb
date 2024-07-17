@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PCM Audio Recording</title>
+</head>
+<body>
+  <h1>PCM Audio Recording</h1>
+  <button id="startButton">Start Recording</button>
+  <button id="stopButton">Stop Recording</button>
+  <script >
+
+const startButton = document.getElementById('startButton');
+const stopButton = document.getElementById('stopButton');
+
+let audioContext;
+let mediaStream;
+let audioProcessor;
+let audioData = [];
+const sampleRate = 16000;
+startButton.addEventListener('click', async () => {
+  try {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    const input = audioContext.createMediaStreamSource(mediaStream);
+    audioProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+
+    input.connect(audioProcessor);
+    audioProcessor.connect(audioContext.destination);
+
+    audioProcessor.onaudioprocess = (event) => {
+      const float32Array = event.inputBuffer.getChannelData(0);
+      const int16Array = new Int16Array(float32Array.length);
+      for (let i = 0; i < float32Array.length; i++) {
+        int16Array[i] = float32Array[i] * 0x7FFF;
+      }
+      audioData.push(...int16Array);
+    };
+
+    console.log('Recording started');
+  } catch (error) {
+    console.error('Error accessing audio stream:', error);
+  }
+});
+
+stopButton.addEventListener('click', () => {
+  if (audioProcessor) {
+    audioProcessor.disconnect();
+    audioContext.close();
+
+    const pcmBlob = new Blob([new Int16Array(audioData).buffer], { type: 'audio/pcm' });
+    const url = URL.createObjectURL(pcmBlob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = 'recording.pcm';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    audioData = []; // 清空音频数据
+
+    console.log('Recording stopped');
+  }
+});
+
+	</script>
+</body>
+</html>

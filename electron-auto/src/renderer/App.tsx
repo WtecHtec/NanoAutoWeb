@@ -23,16 +23,34 @@ function Main() {
 		if (mediaRecorder.current.handleing) return;
 		const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 		mediaRecorder.current.recorder = new MediaRecorder(stream);
+
+		const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+		const input = audioContext.createMediaStreamSource(stream);
+    const processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+    input.connect(processor);
+    processor.connect(audioContext.destination);
+
+    processor.onaudioprocess = (e) => {
+      const float32Array = e.inputBuffer.getChannelData(0);
+      const pcmData = new Int16Array(float32Array.length);
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < float32Array.length; i++) {
+        pcmData[i] = float32Array[i] * 0x7FFF; // 将 Float32 转换为 Int16
+      }
+      mediaRecorder.current.recordedChunks.push(...pcmData);
+    };
 	
-		mediaRecorder.current.recorder.ondataavailable = (event) => {
-			if (event.data.size > 0) {
-				mediaRecorder.current.recordedChunks.push(event.data);
-			}
-		};
+		// mediaRecorder.current.recorder.ondataavailable = (event) => {
+		// 	if (event.data.size > 0) {
+		// 		mediaRecorder.current.recordedChunks.push(event.data);
+		// 	}
+		// };
 	
 		mediaRecorder.current.recorder.onstop = async () => {
 			const { recordedChunks } = mediaRecorder.current;
-			const blob = new Blob(recordedChunks, { type: 'audio/wav' });
+			// const blob = new Blob(recordedChunks, { type: 'audio/pcm' });
+			const blob = new Blob([new Int16Array(recordedChunks).buffer], { type: 'audio/pcm' });
 			const arrayBuffer = await blob.arrayBuffer();
 			mediaRecorder.current.handleing = true;
 			window.electron.ipcRenderer.sendMessage('exprot-blob-render', { buffer: arrayBuffer }); 

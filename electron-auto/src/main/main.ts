@@ -150,20 +150,20 @@ app
 
     ipcMain.on('exprot-blob-render', async (_, { buffer }) => {
       // Mp4Demux.demux(arrayBuffer)
-      // const buf = Buffer.from(buffer);
-      // const outputPath = path.join(
-      //   __dirname,
-      //   'audio-recorder.wav',
-      // );
-      // fs.writeFileSync(outputPath, buf);
-      
+      const buf = Buffer.from(buffer);
       const outputPath = path.join(
         __dirname,
-        './data.wav',
+        'audio-recorder.pcm',
       );
-      console.log('exprot-blob-render---', outputPath);
-      const text = await sparkAudioToText.audioToText(outputPath);
-      console.log('exprot-blob-render---', text);
+      fs.writeFileSync(outputPath, buf);
+      
+      // const outputPath = path.join(
+      //   __dirname,
+      //   './data.pcm',
+      // );
+      // console.log('exprot-blob-render---', outputPath);
+      // const text = await sparkAudioToText.audioToText(outputPath);
+      // console.log('exprot-blob-render---', text);
     });
 
     app.on('activate', () => {
