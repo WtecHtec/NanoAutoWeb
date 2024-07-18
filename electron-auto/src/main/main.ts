@@ -192,7 +192,11 @@ app
     log.info('whenReady');
     createWindow();
 
-    ipcMain.on('exprot-blob-render', (_, { buffer }) => {
+    ipcMain.on('exprot-blob-render', (_, { buffer, prompt }) => {
+      if (prompt) {
+        postAgent(prompt);
+        return
+      }
       // Mp4Demux.demux(arrayBuffer)
       const buf = Buffer.from(buffer);
       const outputPath = path.join(

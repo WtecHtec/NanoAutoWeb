@@ -20,6 +20,7 @@ function Main() {
 	const [recording, setRecording] = useState(false);
 	const [msgList, setMsgList] = useState<any>([])
 	const [agentIng, setAgentIng] = useState(false)
+	const [prompt, setPrompt] = useState('')
 
 
 	const handelRecord = async () => {
@@ -120,17 +121,19 @@ function Main() {
 			window.electron.ipcRenderer.off('agent_main', handleAgent);
 		}
 	}, [])
+
+	const handelSend = (prompt: string) => {
+		if (mediaRecorder.current.handleing) return;
+		mediaRecorder.current.handleing = true
+		setAgentIng(true)
+		console.log('handelSend', prompt)
+		window.electron.ipcRenderer.sendMessage('exprot-blob-render', { prompt, }); 
+		setPrompt('')
+	}
   return (
     <>
-		<div className="">
-			 <input></input>
-			 <div className="auio-container">
-				<div className="circle-animation" style={{ opacity: recording ? 1 : 0 }}></div>
-				<img ref={recordRef} src={AudioSvg} alt="AudioSvg" className="auio-img-svg" />
-			</div>
-		</div>
-
-	<ul style={{ overflow: 'auto', height: '100%'}}>
+	<div className="llm-audio-container">
+	<ul style={{ overflow: 'auto', flex: 1}}>
 		{
 			msgList.map((item: any) => {
 				const { role, content } = item
@@ -144,10 +147,20 @@ function Main() {
 				
 			})
 		}
+		<div className={ 'agent-ing ' + (agentIng ? ' opacity-animation' : 'opacity-hide-animation') }>处理中...</div> 
 	</ul>
-	
-	<div className={ 'agent-ing ' + (agentIng ? ' opacity-animation' : 'opacity-hide-animation') }>处理中...</div> 
-	
+		<div className="audio-input-container">
+			<div className="input-container">
+				<input className="input-text" value={prompt} onChange={(e) => setPrompt(e.target.value)}></input>
+				<button className="send-btn" onClick={() => handelSend(prompt)}>发送</button>
+			</div>
+			
+			 <div className="auio-container">
+				<div className="circle-animation" style={{ opacity: recording ? 1 : 0 }}></div>
+				<img ref={recordRef} src={AudioSvg} alt="AudioSvg" className="auio-img-svg" />
+			</div>
+		</div>
+	</div>
       {/* <h1>Electron Audio Recording</h1>
       <button onClick={handelRecord} disabled={recording}>Start Recording</button>
 			<button onClick={handelStop} disabled={!recording}>Stop Recording</button>
