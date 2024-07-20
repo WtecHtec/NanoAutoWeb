@@ -6,7 +6,7 @@
 		2、从目标中发现可能的策略；
 		3、根据策略做出动作；
 		# 目标:
-    切换深色模式
+    带了一个浅色切换浅浅颜色色盲模式。
     #限制条件说明:
     1、仅使用下面列出的动作；
     2、你只能主动行动，在计划行动时需要考虑这一点；
@@ -25,6 +25,7 @@ action: nextSong, descript:上一首歌，切换歌曲;
 action: previousSong, descript:下一首歌，切换歌曲;
 action: openVsCode, descript:打开Vscode。;
 action: openCodeToVscode, descript:根据代码文件夹路径打开Vscode。vscode打开代码文件夹,args:[{"name":"codePath","type":"string","description":"代码文件夹路径"}];
+action: juejinSignin, descript:掘金签到。;
 ;
 		#资源说明：
 		1、你是一个大语言模型，接受了大量文本的训练，包括大量的事实知识，利用这些知识避免不必要的信息收集和推理；

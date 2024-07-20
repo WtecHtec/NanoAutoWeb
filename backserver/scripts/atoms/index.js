@@ -2,11 +2,13 @@ const qqmusicAtoms = require('./qqmusic')
 const themeAtoms = require('./theme')
 const baseAtoms = require('./base')
 const vscodeAtoms = require('./vscode')
+const juejinAtoms = require('./juejin')
 const actionsMap = Object.assign(
 	baseAtoms.actionsMap,
 	themeAtoms.actionsMap,
 	qqmusicAtoms.actionsMap,
-	vscodeAtoms.actionsMap)
+	vscodeAtoms.actionsMap,
+	juejinAtoms.actionsMap)
 
 function getActionsDescript() {
 	let actionsDescript = ''

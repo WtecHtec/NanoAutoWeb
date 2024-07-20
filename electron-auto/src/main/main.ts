@@ -172,7 +172,7 @@ function handleAgent(outputPath: string) {
   readerStream.on('end', () => {
     // 最终帧发送结束
     console.log('readerStream----end');
-		readerStream.close();
+    readerStream.close();
     sparkAudioWss.endAudioStream();
   });
 
@@ -193,9 +193,10 @@ app
     createWindow();
 
     ipcMain.on('exprot-blob-render', (_, { buffer, prompt }) => {
+			console.log('exprot-blob-render', prompt);
       if (prompt) {
         postAgent(prompt);
-        return
+        return;
       }
       // Mp4Demux.demux(arrayBuffer)
       const buf = Buffer.from(buffer);
@@ -214,17 +215,25 @@ app
       // );
       // console.log('exprot-blob-render---', outputPath);
       // console.log('exprot-blob-render---', audioWssStatus, outputPath);
-      if (audioWssStatus) {
-        handleAgent(outputPath);
-      } else {
-        // eslint-disable-next-line promise/catch-or-return, promise/no-nesting
-        sparkAudioWss.startWss().then((code) => {
-          if (code === 1) {
-            audioWssStatus = true;
-            handleAgent(outputPath);
-          }
-        });
-      }
+
+      // eslint-disable-next-line promise/catch-or-return, promise/no-nesting
+      sparkAudioWss.startWss().then((code) => {
+        if (code === 1) {
+          audioWssStatus = true;
+          handleAgent(outputPath);
+        }
+      });
+      // if (audioWssStatus) {
+      //   handleAgent(outputPath);
+      // } else {
+      //   // eslint-disable-next-line promise/catch-or-return, promise/no-nesting
+      //   sparkAudioWss.startWss().then((code) => {
+      //     if (code === 1) {
+      //       audioWssStatus = true;
+      //       handleAgent(outputPath);
+      //     }
+      //   });
+      // }
       // console.log('exprot-blob-render---', text);
     });
 
