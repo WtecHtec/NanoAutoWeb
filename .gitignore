@@ -49,3 +49,4 @@ package-lock.json
 *.env
 .vscode
 */package-lock.json
+*/tasks-run-logs
